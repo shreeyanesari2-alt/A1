@@ -1,0 +1,486 @@
+---
+title: "Group 4 — Youth risk"
+subtitle: "Studio wall"
+author: "Shivgun, Shreeya and Meghana"
+format:
+  html:
+    toc: true
+    toc-depth: 2
+---
+
+# Spine
+
+> What do teenagers’ bodies and habits look like, which habits travel together, and where is life long?
+
+This sentence stays at the top. Every panel must attach to it. If a plot cannot be introduced in a clause that hangs off this line, it is off the wall.
+
+# Introduction — the tables we own
+
+This folder is ours for the ten days. Three tables, three shapes.
+
+- **Panel A** (`panel-A.csv`) — YRBSS Quants: height, weight, days active, strength training, hours of sleep.
+- **Panel B** (`panel-B.csv`) — YRBSS Quals: helmet, texting while driving, TV, race, gender, grade. Same survey, different columns.
+- **Panel C** (`panel-C.csv`) — gapminder 2007 world. Ask a *different* map question than Group 3 (wealth, population symbols, continent).
+
+A and B are the same teenagers cut two ways. Do not mix them into one dishonest figure.
+
+We load from this folder:
+
+```{r}
+#| label: setup
+library(skimr)
+library(mosaic)
+library(readr)
+library(ggformula) 
+##
+library(vcd) # (NEW!!) for Panel B
+library(broom) # (NEW!!) for clean stat outputs
+
+PanelA <- read.csv(file = "data/panel-A.csv")
+PanelB <- read.csv(file = "data/panel-B.csv")
+PanelC <- read.csv(file = "data/panel-C.csv")
+
+```
+
+Found tables train the mark. A campus Free Hunch, if we collect one, is a **made** panel of the same pair type — new people, old grammar. It does not replace A, B, or C.
+
+# Panel A — body / measure
+
+*height, weight, physically_active_7d, school_night_hours_sleep are Quant. grade is Qual.*
+
+### 1. See the table
+
+What is a case? Which columns are Quant / Qual? What is missing?
+
+``` r
+# glimpse() / inspect() / skim()
+```
+
+```{r}
+#| label: inspect-panelA-data-1
+dplyr::glimpse(PanelA)
+
+```
+
+My PanelA data has:
+
+- 13,583 observations and 08 variables.
+- `age`: Quantitative, numeric
+- `height`: Quantitative, numeric
+- `weight`: Quantitative, numeric
+- `physically_active_7d`: Quantitative, numeric
+- `strength_training_7d`: Quantitative, numeric
+- `gender`: Qualitative, categorical. Encoded <chr>, to be mutated
+- `grade`: Qualitative, categorical. Encoded <chr>, to be mutated
+- `school_night_hours_sleep`: Qualitative, categorical. Encoded <chr>, to be mutated
+
+```{r}
+#| label: inspect-panelA-data-2
+skimr::skim(PanelA)
+```
+
+Furthermore, on the Qual variables panel-A data has :
+
+- `gender` has 3 levels:
+- `grade` has 6 levels:
+- `school_night_hours_sleep` has 8 levels:
+
+And on the Quant variables panel-A data has :
+
+- `age` has a mean of 16.15, sd of 1.26, median of 16.00, min of 12.00, and max of 18.00
+- `height` has a mean of 1.69, sd of 0.10, median of 1.68, min of 1.27, and max of 2.11
+- `weight` has a mean of 67.90, sd of 16.89, median of 64.41, min of 29.94, and max of 180.99
+- `physically_active_7d` has a mean of 3.90, sd of 2.56, median of 4.00, min of 0.00, and max of 7.00
+- `strength_training_7d` has a mean of 2.94, sd of 2.57, median of 3.00, min of 0.00, and max of 7.00
+
+There is missing data.
+
+```{r}
+#| label: mutate-panelA-factors
+
+A_mod <- PanelA |>  mutate( gender = as.factor(gender),
+    grade = as.factor(grade),
+    school_night_hours_sleep = as.factor(school_night_hours_sleep))
+
+glimpse(A_mod)
+    
+```
+
+All is well now as the Blue Lanterns say.
+
+### 2. Ask
+
+One question *this* table can answer. One it cannot. Write both.
+
+Looking at the overall Spine statement, I can pose the following Questions:
+
+1.  Which grade has the most students?
+2.  What is the gender distribution across the grades?
+3.  Do boys strength train more than girls?
+4.  Do girls have better school night sleep than boys? **5. Are heavier students more physically active, does it differ between boys and girls?**
+5.  How does height differ between boys and girls?
+6.  Does grade affect how physically active students are,and does it differ between boys and girls?
+7.  Do heavier students (like me) tend to be in higher grades?
+8.  Do older students sleep less on school nights, and does it differ between boys and girls? 10.Do students who are more physically active also strength train more?
+
+Possibly cannot answer: 1. Why do some students sleep less than 5 hours on school nights? 2. Does the sleep depend on the professor's/teacher's class they have on the next day? 3. Does their weight depend on the items served in mess/tiffins?
+
+### 3. Choose a mark
+
+Geom, map mark, or (later) test that matches the pair type. Name it before you code.
+
+Histogram Scatter Plot Box Plot Bar graph Density graph
+
+### 4. Predict
+
+What do we think we will see? One sentence, before Run.
+
+### 5. Make
+
+Human brick first. Optional: one AI prompt, pasted below, only for what section 3 named.
+
+1.  Which grade has the most students??
+
+```{r}
+#| eval: false
+#| echo: true
+A_mod %>% gf_bar (~ grade)
+```
+
+2.  What is the sex distribution among the grades?
+
+```{r}
+#| eval: false
+#| echo: true
+A_mod %>% gf_bar(~grade, fill = ~gender)
+
+```
+
+3.  Do boys strength train more than girls?
+
+```{r}
+#| eval: false
+#| echo: true
+A_mod %>% gf_histogram(~ strength_training_7d, fill = ~gender, bins = 1, position = "dodge")
+```
+
+```{r}
+#| eval: false
+#| echo: true
+A_mod %>% gf_density(~ strength_training_7d, fill = ~gender)
+```
+
+4.  Do girls have better school night sleep than boys?
+
+```{r}
+#| eval: false
+#| echo: true
+A_mod %>% gf_bar(~ gender, fill = ~school_night_hours_sleep)
+```
+
+**Are heavier students more physically active, does it differ between boys and girls?**
+
+```{r}
+A_mod %>% 
+  filter(gender %in% c("male", "female")) %>%
+
+  gf_point(weight ~ physically_active_7d, color= ~gender)
+```
+
+6.  How does height differ between boys and girls?
+
+```{r}
+#| eval: false
+#| echo: true
+A_mod %>% gf_histogram(~height, fill = ~gender)
+
+```
+
+```{r}
+#| eval: false
+#| echo: true
+A_mod %>% gf_density(~ height, fill = ~gender)
+```
+
+7.  Does grade affect how physically active students are, and does it differ between boys and girls?
+
+```{r}
+#| eval: false
+#| echo: true
+A_mod %>%  filter(gender %in% c("male", "female")) %>% 
+  gf_boxplot( x = ~grade, y = ~physically_active_7d, fill = ~gender) 
+```
+
+8.  Do heavier students (like me) tend to be in higher grades?
+
+```{r}
+#| eval: false
+#| echo: true
+A_mod %>% gf_boxplot( x = ~weight, y = ~grade)
+
+```
+
+9.  Do older students sleep less on school nights, and does it differ between boys and girls?
+
+```{r}
+#| eval: false
+#| echo: true
+A_mod %>%  gf_boxplot(x = ~school_night_hours_sleep, y = ~age, fill = ~gender)
+```
+
+10. Do students who are more physically active also strength train more?
+
+```{r}
+#| eval: false
+#| echo: true
+A_mod %>% gf_point( strength_training_7d ~physically_active_7d)
+
+```
+
+### 6. Say
+
+**Weight tells us almost nothing about how many days a student is active.**
+
+Students at every activity level, 0 to 7 days a week, cover nearly the same range of weights, for both boys and girls.
+
+*Heavier students are not visibly more or less active than lighter ones.*
+
+### 7. Limit
+
+This panel can't say anything about fitness or body composition, since weight alone isn't BMI. There is also missing data.
+
+# Panel B — category / talk
+
+*helmet_12m × gender, text_while_driving_30d × grade. Hours of TV may be ordinal — argue before you average it.*
+
+### 1. See the table
+
+What is a case? Which columns are Quant / Qual? What is missing?
+
+``` r
+# glimpse() / inspect() / skim()
+```
+
+```{r}
+#| label: inspect-panelB-data-1
+dplyr::glimpse(PanelB)
+
+```
+
+My PanelB data has:
+
+- 13,583 observations and 08 variables.
+- `age`: Quantitative, numeric
+- `gender`: Qualitative, categorical. Encoded <chr>, to be mutated
+- `grade`: Qualitative, categorical. Encoded <chr>, to be mutated
+- `hispanic`: Qualitative, categorical. Encoded <chr>, to be mutated
+- \`race\`\`: Qualitative, categorical. Encoded <chr>, to be mutated
+- `helmet_12m`: Qualitative, categorical. Encoded <chr>, to be mutated
+- `text_while_driving_30d`: Qualitative, categorical. Encoded <chr>, to be mutated'
+- `hours_tv_per_school_day`: Qualitative, categorical. Encoded <chr>, to be mutated
+
+```{r}
+#| label: inspect-panelB-data-2
+skimr::skim(PanelB)
+```
+
+Furthermore, on the Qual variables panel-A data has :
+
+- `gender` has 3 levels:
+- `grade` has 6 levels:
+- `hispanic` has 3 levels:
+- `race`has 6 levels:
+- `helment_12m` has 7 levels:
+- `text_while_driving_30d` has 9 levels:
+- `hours_tv_per_school_day` has 8 levels:
+
+And on the Quant variables panel-A data has :
+
+- `age` has a mean of 16.15, sd of 1.26, median of 16.00, min of 12.00, and max of 18.00
+
+```{r}
+#| label: mutate-panelB-factors
+
+B_mod <- PanelB |>  mutate( gender = as.factor(gender),
+    grade = as.factor(grade), hispanic = as.factor(hispanic), race = as.factor(race), helmet_12m = as.factor(helmet_12m), text_while_driving_30d = as.factor(text_while_driving_30d), hours_tv_per_school_day = as.factor(hours_tv_per_school_day)) 
+
+glimpse(B_mod)
+```
+
+### 2. Ask
+
+One question *this* table can answer. One it cannot. Write both.
+
+Looking at the overall Spine statement, I can pose the following Questions:
+
+1.  Do boys or girls text while driving more? **2. Do boys or girls skip helmets more?**
+2.  Are the students who text while driving older?
+
+Possibly cannot answer:
+
+1.  Why do some students never wear a helmet?
+2.  Do students who text while driving have more crashes?
+
+### 3. Choose a mark
+
+Geom, map mark, or (later) test that matches the pair type. Name it before you code.
+
+Bar Graph Box Plot Mosaic Charts
+
+```{r}
+#| eval: false
+#| echo: true
+vcd::structable(grade ~ gender , data = B_mod) %>% vcd::mosaic()
+```
+
+```{r}
+#| eval: false
+#| echo: true
+vcd::structable(grade ~ gender , data = B_mod) %>% vcd::mosaic(type = "expected")
+```
+
+```{r}
+#| eval: false
+#| echo: true
+mosaic::xchisq.test(grade ~ gender, data = B_mod) 
+```
+
+```{r}
+#| eval: false
+#| echo: true
+vcd::structable(gender ~ helmet_12m , data = B_mod) %>% vcd::mosaic()
+
+```
+
+```{r}
+#| eval: false
+#| echo: true
+vcd::structable(gender ~ helmet_12m , data = B_mod) %>% vcd::mosaic(type = "expected")
+
+```
+
+```{r}
+#| eval: false
+#| echo: true
+mosaic::xchisq.test(gender ~ helmet_12m , data = B_mod) 
+```
+
+### 4. Predict
+
+What do we think we will see? One sentence, before Run.
+
+### 5. Make
+
+1.  Do boys or girls text while driving more?
+
+```{r}
+#| eval: false
+#| echo: true
+#| 
+B_mod %>% gf_bar( ~text_while_driving_30d, fill = ~gender)
+
+```
+
+**2. Do boys or girls skip helmets more?**
+
+```{r}
+B_mod %>% gf_bar( ~helmet_12m, fill = ~gender)
+
+```
+
+3.  Are the students who text while driving older?
+
+```{r}
+#| eval: false
+#| echo: true
+
+B_mod %>% gf_boxplot( x = ~age, y =~text_while_driving_30d)
+
+```
+
+### 6. Say
+
+**Most students never wear a helmet, whether they are boys or girls.**
+
+Never" is the tallest bar by a wide margin, and both boys and girls make up a large part of it.
+
+Helmet use is rare among students of both genders.
+
+### 7. Limit
+
+This panel shows how often students say they wear a helmet, not why they skip it.
+
+The chart shows counts, not proportions, so not an exact boys versus girls comparison.
+
+# Panel C — place
+
+*Same file as Group 3 C. Different question. lifeExp vs gdpPercap, or pop as symbol size.*
+
+Geometry is not in the CSV. Join in R, then use the same seven headings.
+
+``` r
+# library(sf)
+# library(rnaturalearth)
+# world <- ne_countries(scale = "medium", returnclass = "sf")
+# # join on country name; list the unmatched labels
+```
+
+### 1. See the table
+
+What is a case? Which columns are Quant / Qual? What is missing?
+
+``` r
+# glimpse() / inspect() / skim()
+```
+
+```{r}
+#| label: inspect-panelC-data
+dplyr::glimpse(PanelC)
+
+```
+
+### 2. Ask
+
+One question *this* table can answer. One it cannot. Write both.
+
+### 3. Choose a mark
+
+Geom, map mark, or (later) test that matches the pair type. Name it before you code.
+
+### 4. Predict
+
+What do we think we will see? One sentence, before Run.
+
+### 5. Make
+
+Human brick first. Optional: one AI prompt, pasted below, only for what section 3 named.
+
+``` r
+# human chunk
+
+# ## Prompt we actually used
+# ai_draft
+# ours
+```
+
+### 6. Say
+
+Caption + one sentence we will stand behind. Title is a sentence, not a column name.
+
+### 7. Limit
+
+What this panel cannot do. Which kit table we refused to abuse.
+
+# Conclusion
+
+What the spine looks like after three panels.
+
+- The question we will defend in ninety seconds
+- What we will **not** claim
+- Which lines were human, which were machine
+- Limits: sample, missingness, the test we did not run
+- Gift for the steal-this strip (palette, annotation, join trick)
+
+``` r
+# sessionInfo()
+```
